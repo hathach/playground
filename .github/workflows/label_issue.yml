@@ -19,9 +19,13 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             let label = '';
+            let username;
 
-            const isPullRequest = github.event_name === 'pull_request';
-            const username = isPullRequest ? github.event.pull_request.user.login : github.event.issue.user.login;
+            if (github.event_name === 'pull_request') {
+              username = github.event.pull_request.user.login;
+            } else {
+              username = github.event.issue.user.login;
+            }
 
             const collaboratorResponse = await github.repos.checkCollaborator({
               owner: context.repo.owner,
@@ -47,10 +51,11 @@ jobs:
             }
 
             if (label !== '') {
+              const issueNumber = github.event.pull_request ? github.event.pull_request.number : context.issue.number;
               await github.issues.addLabels({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                issue_number: context.issue?.number || context.payload.pull_request?.number,
+                issue_number: issueNumber,
                 labels: [label]
               });
             }
