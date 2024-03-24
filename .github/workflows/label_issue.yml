@@ -12,13 +12,13 @@ jobs:
 
     steps:
       - name: Label New Issue
-        uses: actions/github-script@v6
+        uses: actions/github-script@v5
         with:
           github-token: ${{ secrets.GH_TOKEN }}
           script: |
             let label = '';
 
-            const collaboratorResponse = await github.repos.checkCollaborator({
+            const collaboratorResponse = await github.rest.repos.checkCollaborator({
               owner: context.repo.owner,
               repo: context.repo.repo,
               username: context.payload.issue.user.login
@@ -28,7 +28,7 @@ jobs:
               console.log('Contributor');
               label = 'Prio Urgent';
             } else {
-              const adafruitResponse = await github.orgs.checkMembership({
+              const adafruitResponse = await github.rest.orgs.checkMembership({
                 org: 'adafruit',
                 username: context.payload.issue.user.login
               });
@@ -42,7 +42,7 @@ jobs:
             }
 
             if (label !== '') {
-              await github.issues.addLabels({
+              await github.rest.issues.addLabels({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 issue_number: context.payload.issue.number,
