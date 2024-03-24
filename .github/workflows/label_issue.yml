@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check user permissions and assign label
+      - name: Label New Issue
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.GH_TOKEN }}
@@ -21,7 +21,7 @@ jobs:
             const collaboratorResponse = await github.repos.checkCollaborator({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              username: '${{ github.event.issue.user.login }}'
+              username: context.payload.issue.user.login
             });
 
             if (collaboratorResponse.status === 204) {
@@ -30,7 +30,7 @@ jobs:
             } else {
               const adafruitResponse = await github.orgs.checkMembership({
                 org: 'adafruit',
-                username: '${{ github.event.issue.user.login }}'
+                username: context.payload.issue.user.login
               });
 
               if (adafruitResponse.status === 204) {
@@ -45,7 +45,7 @@ jobs:
               await github.issues.addLabels({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                issue_number: context.issue.number,
+                issue_number: context.payload.issue.number,
                 labels: [label]
               });
             }
