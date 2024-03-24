@@ -3,8 +3,6 @@ name: Label New Issue
 on:
   issues:
     types: [opened]
-  discussion:
-    types: [created]
 
 jobs:
   assign-label:
