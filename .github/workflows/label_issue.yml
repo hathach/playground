@@ -14,7 +14,7 @@ jobs:
       - name: Check user permissions and assign label
         uses: actions/github-script@v4
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.GH_TOKEN }}
           script: |
             let label = '';
 
