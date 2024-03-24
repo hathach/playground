@@ -5,6 +5,8 @@ on:
     types: [opened]
   discussion:
     types: [created]
+  pull_request:
+    types: [opened]
 
 jobs:
   assign-label:
