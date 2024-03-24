@@ -16,36 +16,40 @@ jobs:
         with:
           github-token: ${{ secrets.GH_TOKEN }}
           script: |
-            let label = '';
+            try {
+              let label = '';
 
-            const collaboratorResponse = await github.repos.checkCollaborator({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              username: context.payload.issue.user.login
-            });
-
-            if (collaboratorResponse.status === 204) {
-              console.log('Contributor');
-              label = 'Prio Urgent';
-            } else {
-              const adafruitResponse = await github.orgs.checkMembership({
-                org: 'adafruit',
+              const collaboratorResponse = await github.repos.checkCollaborator({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
                 username: context.payload.issue.user.login
               });
 
-              if (adafruitResponse.status === 204) {
-                console.log('Adafruit Member');
+              if (collaboratorResponse && collaboratorResponse.status === 204) {
+                console.log('Contributor');
                 label = 'Prio Urgent';
               } else {
-                console.log('Not a contributor or Adafruit member');
-              }
-            }
+                const adafruitResponse = await github.orgs.checkMembership({
+                  org: 'adafruit',
+                  username: context.payload.issue.user.login
+                });
 
-            if (label !== '') {
-              await github.issues.addLabels({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: context.payload.issue.number,
-                labels: [label]
-              });
+                if (adafruitResponse && adafruitResponse.status === 204) {
+                  console.log('Adafruit Member');
+                  label = 'Prio Urgent';
+                } else {
+                  console.log('Not a contributor or Adafruit member');
+                }
+              }
+
+              if (label !== '') {
+                await github.issues.addLabels({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: context.payload.issue.number,
+                  labels: [label]
+                });
+              }
+            } catch (error) {
+              console.error('Error:', error.message);
             }
