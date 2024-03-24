@@ -1,4 +1,4 @@
-name: Label New Issue
+name: Label New Issue or PR
 
 on:
   issues:
@@ -16,14 +16,17 @@ jobs:
       - name: Check user permissions and assign label
         uses: actions/github-script@v4
         with:
-          github-token: ${{ secrets.GH_TOKEN }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             let label = '';
+
+            const isPullRequest = github.event_name === 'pull_request';
+            const username = isPullRequest ? github.event.pull_request.user.login : github.event.issue.user.login;
 
             const collaboratorResponse = await github.repos.checkCollaborator({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              username: '${{ github.event.issue.user.login }}'
+              username: username
             });
 
             if (collaboratorResponse.status === 204) {
@@ -32,7 +35,7 @@ jobs:
             } else {
               const adafruitResponse = await github.orgs.checkMembership({
                 org: 'adafruit',
-                username: '${{ github.event.issue.user.login }}'
+                username: username
               });
 
               if (adafruitResponse.status === 204) {
@@ -47,7 +50,7 @@ jobs:
               await github.issues.addLabels({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                issue_number: context.issue.number,
+                issue_number: context.issue?.number || context.payload.pull_request?.number,
                 labels: [label]
               });
             }
