@@ -28,24 +28,26 @@ jobs:
               issueOrPrNumber = context.payload.pull_request.number;
             }
 
-            const collaboratorResponse = await github.rest.repos.checkCollaborator({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
+            // Check for Adafruit membership first
+            const adafruitResponse = await github.rest.orgs.checkMembershipForUser({
+              org: 'adafruit',
               username: username
             });
 
-            if (collaboratorResponse.status === 204) {
-              console.log('Contributor');
+            if (adafruitResponse.status === 204) {
+              console.log('Adafruit Member');
               label = 'Prio Urgent';
             } else {
-              const adafruitResponse = await github.rest.orgs.checkMembership({
-                org: 'adafruit',
+              // If not an Adafruit member, then check if the user is a contributor
+              const collaboratorResponse = await github.rest.repos.checkCollaborator({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
                 username: username
               });
-
-              if (adafruitResponse.status === 204) {
-                console.log('Adafruit Member');
-                label = 'Prio Urgent';
+              
+              if (collaboratorResponse.status === 204) {
+                console.log('Contributor');
+                label = 'Prio Higher';
               } else {
                 console.log('Not a contributor or Adafruit member');
               }
